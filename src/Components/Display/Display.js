@@ -1,9 +1,9 @@
 import React from 'react';
-import './Display.scss';
+import './display.scss';
 
 const Display = (props) => {
   return (
-    <div className="display">
+    <div className="display" id="display">
       {props.display}
     </div>
   );

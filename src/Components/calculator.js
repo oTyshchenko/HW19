@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import Display from './Display/Display';
-import './App.scss';
-import BtnBox from './BtnBox/BtnBox';
+import Display from './display/display.js';
+import BtnBox from './btnBox/btnBox.js';
+import { getCutStr } from '../logic/getCutStr.js';
 
-const App = () => {
+import './calculator.scss';
+
+const Calculator = () => {
   const [state, setstate] = useState({
     firstNumber: '',
     operator: '',
@@ -11,39 +13,50 @@ const App = () => {
     result: '',
     display: ''
   });
-  
-  const getRefreshState = (firstNumber, operator, secondNumber, result, display) => {
+
+  const getRefreshState = (firstNumber, operator, secondNumber, result, onDisplay) => {
+    const display = document.getElementById('display');
+
+    if (onDisplay) {
+      if (onDisplay.length >= 0 && onDisplay.length < 8) {
+        display.style.fontSize = '50px';
+      } else if (onDisplay.length >= 8 && onDisplay.length < 10) {
+        display.style.fontSize = '40px';
+      } else if (onDisplay.length >= 10 && onDisplay.length < 13) {
+        display.style.fontSize = '30px';
+      } else if (onDisplay.length >= 13) {
+        display.style.fontSize = '20px';
+      }
+    }
+
     setstate({
       firstNumber: firstNumber,
       operator: operator,
       secondNumber: secondNumber,
       result: result,
-      display: display
+      display: onDisplay
     })
   }
 
   const changeDisplay = (value) => {
+
     switch (true) {
       case value === 'AC':
         getRefreshState('', '', '', '', '');
         break;
 
       case ['/', '*', '-', '+'].includes(value):
-        const firstNumber = state.firstNumber;
-
-        if (firstNumber !== '') {
-          getRefreshState(firstNumber, value, '', '', firstNumber);
+        if (state.firstNumber !== '') {
+          getRefreshState(state.firstNumber, value, '', '', state.firstNumber);
         }
         break;
 
       case value === '+/-':
         if (state.operator === '') {
           const firstNumber = String(state.firstNumber * -1);
-
           getRefreshState(firstNumber, '', '', '', firstNumber);
         } else {
           const secondNumber = String(state.secondNumber * -1);
-
           getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
         }
         break;
@@ -51,15 +64,17 @@ const App = () => {
       case value === '%':
         if (state.operator === '') {
           if (state.firstNumber !== '') {
-            const firstNumber = state.firstNumber + '%';
-
-            getRefreshState(firstNumber, '', '', '', firstNumber);
+            if (state.firstNumber.search('%') === -1) {
+              const firstNumber = state.firstNumber + '%';
+              getRefreshState(firstNumber, '', '', '', firstNumber);
+            }
           }
         } else {
           if (state.secondNumber !== '') {
-            const secondNumber = state.secondNumber + '%';
-
-            getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
+            if (state.secondNumber.search('%') === -1) {
+              const secondNumber = state.secondNumber + '%';
+              getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
+            }
           }
         }
         break;
@@ -68,13 +83,11 @@ const App = () => {
         if (state.operator === '') {
           if (state.firstNumber.indexOf('.') === -1) {
             const firstNumber = state.firstNumber + value;
-
             getRefreshState(firstNumber, '', '', '', firstNumber);
           }
         } else {
           if (state.secondNumber.indexOf('.') === -1) {
             const secondNumber = state.secondNumber + value;
-
             getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
           }
         }
@@ -129,15 +142,13 @@ const App = () => {
 
       case value === '0':
         if (state.operator === '') {
-          const firstNumber = state.firstNumber + value;
-
           if (state.firstNumber !== '0' || state.firstNumber === '0.') {
+            const firstNumber = state.firstNumber + value;
             getRefreshState(firstNumber, '', '', '', firstNumber);
           }
         } else {
-          const secondNumber = state.secondNumber + value;
-
           if (state.secondNumber !== '0' || state.secondNumber === '0.') {
+            const secondNumber = state.secondNumber + value;
             getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
           }
         }
@@ -146,22 +157,18 @@ const App = () => {
       default:
         if (state.operator === '') {
           if (state.firstNumber !== '0') {
-            const firstNumber = state.firstNumber + value;
-
+            const firstNumber = getCutStr(state.firstNumber + value);
             getRefreshState(firstNumber, '', '', '', firstNumber);
           } else {
             const firstNumber = value;
-
             getRefreshState(firstNumber, '', '', '', firstNumber);
           }
         } else {
           if (state.secondNumber !== '0') {
-            const secondNumber = state.secondNumber + value;
-
+            const secondNumber = getCutStr(state.secondNumber + value);
             getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
           } else {
             const secondNumber = value;
-
             getRefreshState(state.firstNumber, state.operator, secondNumber, '', secondNumber);
           }
         }
@@ -175,6 +182,6 @@ const App = () => {
       <BtnBox changeDisplay={changeDisplay} display={state.display} />
     </div>
   );
-}
+};
 
-export default App;
+export default Calculator;
